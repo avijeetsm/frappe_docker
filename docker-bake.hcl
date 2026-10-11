@@ -32,6 +32,24 @@ variable "BENCH_REPO" {
     default = "https://github.com/frappe/bench"
 }
 
+variable "CUSTOM_IMAGE" {
+    default = "custom"
+}
+
+variable "CUSTOM_TAG" {
+    default = "16"
+}
+
+variable "CUSTOM_FRAPPE_VERSION" {
+    default = "v16.33.0"
+}
+
+variable "CUSTOM_PLATFORMS" {
+    # Native default for this Apple Silicon development machine. Override to
+    # linux/amd64 when publishing for a standard AKS node pool.
+    default = "linux/arm64"
+}
+
 variable "LATEST_BENCH_RELEASE" {
     default = "latest"
 }
@@ -114,4 +132,17 @@ target "build" {
     dockerfile = "images/production/Containerfile"
     target = "build"
     tags = tag("build", "${ERPNEXT_VERSION}")
+}
+
+# Custom image containing the applications listed in apps.json.
+# Build locally with --load, or publish to a registry with --push.
+target "custom" {
+    context = "."
+    dockerfile = "images/layered/Containerfile"
+    args = {
+        FRAPPE_PATH = "${FRAPPE_REPO}"
+        FRAPPE_BRANCH = "${CUSTOM_FRAPPE_VERSION}"
+    }
+    platforms = ["${CUSTOM_PLATFORMS}"]
+    tags = ["${CUSTOM_IMAGE}:${CUSTOM_TAG}"]
 }

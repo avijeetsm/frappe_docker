@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: frappe
+
+resources:
+  - namespace.yaml
+  - config.yaml
+  - storage.yaml
+  - mariadb.yaml
+  - redis.yaml
+  - configurator.yaml
+  - backend.yaml
+  - websocket.yaml
+  - workers.yaml
+  - frontend.yaml
+  - ingress.yaml
+
+images:
+  - name: frappe-custom
+    newName: frappecontainers.azurecr.io/frappe-custom
+    digest: sha256:aad634f69f4b0f88df4afa66044c25dc33365d15fa0a7bd1e925b5cf424edb91

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-queue-short
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: frappe-queue-short}}
+  template:
+    metadata: {labels: {app: frappe-queue-short}}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: worker
+          image: frappe-custom
+          command: [bench, worker, --queue, "short,default"]
+          envFrom:
+            - configMapRef: {name: frappe-config}
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-queue-long
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: frappe-queue-long}}
+  template:
+    metadata: {labels: {app: frappe-queue-long}}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: worker
+          image: frappe-custom
+          command: [bench, worker, --queue, "long,default,short"]
+          envFrom:
+            - configMapRef: {name: frappe-config}
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-scheduler
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: frappe-scheduler}}
+  template:
+    metadata: {labels: {app: frappe-scheduler}}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: scheduler
+          image: frappe-custom
+          command: [bench, schedule]
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}

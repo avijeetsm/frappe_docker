@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-websocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: frappe-websocket}
+  template:
+    metadata:
+      labels: {app: frappe-websocket}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: websocket
+          image: frappe-custom
+          command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
+          envFrom:
+            - configMapRef: {name: frappe-config}
+          ports: [{name: socketio, containerPort: 9000}]
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frappe-websocket
+spec:
+  selector: {app: frappe-websocket}
+  ports: [{name: socketio, port: 9000, targetPort: socketio}]

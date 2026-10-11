@@ -59,6 +59,7 @@ The full `frappe_docker` documentation is available in [`docs/`](docs/) and publ
 ### Recommended entry points:
 
 - **New here:** [Getting Started Guide](docs/getting-started.md)
+- **This project:** [Project deployment manual](docs/PROJECT_DEPLOYMENT_MANUAL.md)
 - **Choosing a setup:** [Deployment methods](docs/01-getting-started/01-choosing-a-deployment-method.md)
 - **ARM64 notes:** [ARM64](docs/01-getting-started/03-arm64.md)
 - **Container setup overview:** [Container Setup Overview](docs/02-setup/01-overview.md)

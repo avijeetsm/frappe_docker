@@ -1,0 +1,24 @@
+{
+  "image": "frappecontainers.azurecr.io/frappe-custom:16.0.2-arm64",
+  "digest": "sha256:aad634f69f4b0f88df4afa66044c25dc33365d15fa0a7bd1e925b5cf424edb91",
+  "platform": "linux/arm64",
+  "frappe": {
+    "repository": "https://github.com/frappe/frappe",
+    "ref": "v16.33.0",
+    "commit": "33bf510b17afcaaa857ed38b921d8e9e50dcd232"
+  },
+  "apps": [
+    {"name": "erpnext", "repository": "https://github.com/frappe/erpnext.git", "ref": "v16.34.1", "commit": "0b50853985312bc64977f9324c55b5d8c1ab2e59"},
+    {"name": "crm", "repository": "https://github.com/frappe/crm", "ref": "v1.83.0", "commit": "52c500d6bdac3cd51553f95cfae9c7a940d99f1a"},
+    {"name": "india_compliance", "repository": "https://github.com/resilient-tech/india-compliance", "ref": "v16.9.0", "commit": "071b544ac4440636e643fc383ed67a116a276691"},
+    {"name": "hrms", "repository": "https://github.com/frappe/hrms", "ref": "v16.17.1", "commit": "e1481b5cd038657d82357d91a2d81cc84c707016"},
+    {"name": "india_payroll", "repository": "https://github.com/frappe/india-payroll", "ref": "develop", "commit": "cd682b924aa3fc2169f1d9a867b1c3fac9a5ac47"},
+    {"name": "insights", "repository": "https://github.com/frappe/insights", "ref": "version-3", "commit": "b7bf01ad60d5ae45a9863e81ab89c24785adfade"},
+    {"name": "print_designer", "repository": "https://github.com/frappe/print_designer", "ref": "develop", "commit": "5ef396fd96d8504c8596e10951f6c37567d30283"},
+    {"name": "frappe_whatsapp", "repository": "https://github.com/shridarpatil/frappe_whatsapp", "ref": "master", "commit": null}
+  ],
+  "base_images": {
+    "frappe/build:v16.33.0": "sha256:2696186f3e0ff0f61b97918e3f20b4be2132de922ca509241883351c73440b1e",
+    "frappe/base:v16.33.0": "sha256:61065e657669eb730a5902dd4b9e6469e34bce2316792adec9a47341f0cabd86"
+  }
+}

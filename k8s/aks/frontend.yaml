@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: frappe-frontend}
+  template:
+    metadata:
+      labels: {app: frappe-frontend}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: frontend
+          image: frappe-custom
+          command: [nginx-entrypoint.sh]
+          env:
+            - {name: BACKEND, value: frappe-backend:8000}
+            - {name: SOCKETIO, value: frappe-websocket:9000}
+            - {name: FRAPPE_SITE_NAME_HEADER, value: "$http_host"}
+            - {name: PROXY_READ_TIMEOUT, value: "120"}
+            - {name: CLIENT_MAX_BODY_SIZE, value: 50m}
+          ports: [{name: http, containerPort: 8080}]
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frappe-frontend
+spec:
+  selector: {app: frappe-frontend}
+  ports: [{name: http, port: 8080, targetPort: http}]

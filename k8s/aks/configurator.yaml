@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: frappe-configurator
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: configurator
+          image: frappe-custom
+          command: [bash, -c]
+          args:
+            - >-
+              mkdir -p sites;
+              test -f sites/common_site_config.json || echo '{}' > sites/common_site_config.json;
+              ls -1 apps > sites/apps.txt;
+              bench set-config -g db_host "$DB_HOST";
+              bench set-config -gp db_port "$DB_PORT";
+              bench set-config -g db_type "$DB_TYPE";
+              bench set-config -g redis_cache "$FRAPPE_REDIS_CACHE";
+              bench set-config -g redis_queue "$FRAPPE_REDIS_QUEUE";
+              bench set-config -g redis_socketio "$FRAPPE_REDIS_QUEUE";
+              bench set-config -gp socketio_port "$SOCKETIO_PORT";
+              bench set-config -g server_script_enabled 1;
+          envFrom:
+            - configMapRef: {name: frappe-config}
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}

@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: frappe-create-site
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      initContainers:
+        - name: wait-for-config
+          image: frappe-custom
+          command: [bash, -c]
+          args:
+            - >-
+              for i in {1..60}; do
+                test -f sites/common_site_config.json && exit 0;
+                sleep 5;
+              done;
+              exit 1
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+      containers:
+        - name: create-site
+          image: frappe-custom
+          command: [bash, -c]
+          args:
+            - >-
+              wait-for-it -t 180 "$DB_HOST:$DB_PORT";
+              wait-for-it -t 180 "$REDIS_CACHE";
+              wait-for-it -t 180 "$REDIS_QUEUE";
+              if [ -d "sites/$SITE_NAME" ]; then
+                echo "Site already exists";
+              else
+                bench new-site "$SITE_NAME" --mariadb-user-host-login-scope='%' --admin-password="$ADMIN_PASSWORD" --db-root-username=root --db-root-password="$DB_ROOT_PASSWORD" --install-app erpnext --install-app crm --install-app india_compliance --install-app hrms --install-app india_payroll --install-app insights --install-app print_designer --set-default;
+              fi
+          envFrom:
+            - configMapRef: {name: frappe-config}
+          env:
+            - {name: DB_ROOT_PASSWORD, valueFrom: {secretKeyRef: {name: frappe-secrets, key: mariadb-root-password}}}
+            - {name: ADMIN_PASSWORD, valueFrom: {secretKeyRef: {name: frappe-secrets, key: admin-password}}}
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, persistentVolumeClaim: {claimName: frappe-sites}}

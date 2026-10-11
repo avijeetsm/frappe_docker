@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frappe-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: frappe-backend}
+  template:
+    metadata:
+      labels: {app: frappe-backend}
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: backend
+          image: frappe-custom
+          env:
+            - {name: GUNICORN_THREADS, value: "4"}
+            - {name: GUNICORN_WORKERS, value: "2"}
+            - {name: GUNICORN_TIMEOUT, value: "120"}
+          ports: [{name: http, containerPort: 8000}]
+          volumeMounts:
+            - {name: sites, mountPath: /home/frappe/frappe-bench/sites}
+            - {name: logs, mountPath: /home/frappe/frappe-bench/logs}
+      volumes:
+        - {name: sites, persistentVolumeClaim: {claimName: frappe-sites}}
+        - {name: logs, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frappe-backend
+spec:
+  selector: {app: frappe-backend}
+  ports: [{name: http, port: 8000, targetPort: http}]
